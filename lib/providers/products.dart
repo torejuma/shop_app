@@ -105,9 +105,7 @@ class Products with ChangeNotifier {
     }catch (error){
        print(error);
        throw error;
-    }finally{
-
-    }
+    } finally { }
   }
 
     updateProduct(String id, Product newProduct) async {
