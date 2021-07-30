@@ -42,7 +42,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.initState();
   }
 
-  //for Editing product
+  //for Editing product!!!!!!!!!!!!!!!!!!!!
   var _isInit = true;
   var _initValues = {
     'title': '',
@@ -70,9 +70,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _isInit = false;
 
     super.didChangeDependencies();
-  }
-
-  //for Editing product end
+  } //for Editing product end
 
   void _updateImageUrl() {
     if (!_imageUrlFocusNode.hasFocus) {
@@ -92,14 +90,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     if (_editedProduct.id != '') {
-      Provider.of<Products>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
-
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
-
     } else {
       try {
         await Provider.of<Products>(context, listen: false)
@@ -119,13 +111,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
       }
+      // finally {
+      //   setState(() {
+      //     _isLoading = false;
+      //   });
+      //   Navigator.of(context).pop();
+      // }
     }
+    setState(() {
+      _isLoading = false;
+    });
+    Navigator.of(context).pop();
   }
 
   @override
