@@ -62,14 +62,12 @@ class Orders with ChangeNotifier {
 
     final List<OrderItem> loadedOrders = [];
 
-    if (extractedData.isNotEmpty ) {
       extractedData.forEach((orderId, orderData) {
         loadedOrders.add(
             OrderItem(
                 id: orderId,
                 amount: orderData['amount'],
                 dateTime: DateTime.parse(orderData['dateTime']),
-
                 products: (orderData['products'] as List<dynamic>)
                     .map((item) =>
                     CartItem(
@@ -87,9 +85,6 @@ class Orders with ChangeNotifier {
       _orders = loadedOrders.reversed.toList();
       notifyListeners();
 
-    } else {
-      print('ERROR');
-    }
 
   }
 
