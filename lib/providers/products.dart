@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
+
   List<Product> _items = [
     // Product(
     //   id: 'p1',
@@ -40,6 +41,11 @@ class Products with ChangeNotifier {
     // ),
   ];
 
+  final String authToken;
+
+  Products(this.authToken, this._items);
+
+
   List<Product> get items {
     return [..._items]; // ????????? copy of _items
   }
@@ -53,7 +59,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchProducts() async {
-    const url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json';
+    final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken';
 
     try{
       final response = await http.get(Uri.parse(url));
