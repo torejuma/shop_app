@@ -42,8 +42,9 @@ class Products with ChangeNotifier {
   ];
 
   final String authToken;
+  final String userId;
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this.userId, this._items);
 
 
   List<Product> get items {
@@ -58,14 +59,27 @@ class Products with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  Future<void> fetchProducts() async {
-    final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken';
-
+  //fetchProducts([bool filterByUser = false]) => default value []=> for optional value
+  Future<void> fetchProducts([bool filterByUser = false]) async {
+    final filterUserString = filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+    var url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json'
+        '?auth=$authToken&$filterUserString';
     try{
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+          Uri.parse(url)
+      );
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      if (extractedData.isEmpty) {
+        return;
+      }
+
+      url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId.json?auth=$authToken';
+      final favResponse = await http.get(
+        Uri.parse(url),
+      );
+      final favData = json.decode(favResponse.body);
+
       final List<Product> loadedProducts = [];
-      
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
           id: prodId,
@@ -73,20 +87,19 @@ class Products with ChangeNotifier {
           price: prodData['price'],
           description: prodData['description'],
           imageUrl: prodData['imageUrl'],
-          isFavorite: prodData['isFavorite'],
+          isFavorite: favData==null ? false : favData[prodId] ?? false,
         ));
       });
       _items = loadedProducts;
       notifyListeners();
 
-    } catch(error) {
+    } catch (error) {
       throw (error);
     }
   }
 
   addProduct (Product product) async {
-    const url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json';
-
+    final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken';
     try {
       final response = await http.post(Uri.parse(url),
           body: json.encode({
@@ -94,7 +107,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite
+            'creatorId': userId,
           }));
 
       final newProduct = Product(
@@ -104,10 +117,8 @@ class Products with ChangeNotifier {
         price: product.price,
         imageUrl: product.imageUrl,
       );
-
       _items.add(newProduct);
       notifyListeners();
-
     }catch (error){
        print(error);
        throw error;
@@ -117,7 +128,7 @@ class Products with ChangeNotifier {
     updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((element) => element.id == id);
     if (prodIndex >= 0) {
-      final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json';
+      final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$authToken';
       await http.patch(Uri.parse(url), body: json.encode({
         'title': newProduct.title,
         'description': newProduct.description,
@@ -133,7 +144,7 @@ class Products with ChangeNotifier {
   }
 
    deleteProduct(String id) async {
-    final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json';
+    final url = 'https://shop-app-tore-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$authToken';
     final _existingProductIndex = _items.indexWhere((element) => element.id == id );
     Product? _existingProduct = _items[_existingProductIndex];
 

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:magazin_app/providers/auth.dart';
 import 'package:magazin_app/providers/cart.dart';
 import 'package:magazin_app/providers/product.dart';
 import 'package:magazin_app/screens/product_detail_screen.dart';
@@ -18,6 +19,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -58,7 +60,7 @@ class ProductItem extends StatelessWidget {
           leading: Consumer<Product>(
             builder: (ctx, product, child) => IconButton(
               onPressed: () {
-                product.toggleFavorite();
+                product.toggleFavorite(authData.token!, authData.userId!);
               },
               icon: Icon(
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),

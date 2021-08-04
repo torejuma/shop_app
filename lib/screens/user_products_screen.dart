@@ -10,9 +10,14 @@ class UserProductsScreen extends StatelessWidget {
 
   static const routeName = '/user-products';
 
+  _onRefresh(BuildContext context) async {
+    await Provider.of<Products>(context, listen: false).fetchProducts(true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Products>(context);
+    //final productData = Provider.of<Products>(context);
+    print('rebuilding...');
 
     return Scaffold(
       appBar: AppBar(
@@ -27,32 +32,34 @@ class UserProductsScreen extends StatelessWidget {
           ),
         ],
       ),
-
       drawer: AppDrawer(),
-
-      body: RefreshIndicator(
-        onRefresh: () => _onRefresh(context),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-            itemBuilder: (_, index) => Column(
-              children: [
-                UserProductItem(
-                  id: productData.items[index].id,
-                  title: productData.items[index].title,
-                  imageUrl: productData.items[index].imageUrl,
-                ),
-                Divider(),
-              ],
-            ),
-            itemCount: productData.items.length,
-          ),
-        ),
+      body: FutureBuilder(
+        future: _onRefresh(context),
+        builder: (ctx, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: () => _onRefresh(context),
+                    child: Consumer<Products>(
+                      builder: (ctx, productData, _) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView.builder(
+                          itemBuilder: (_, i) => Column(
+                            children: [
+                              UserProductItem(
+                                id: productData.items[i].id,
+                                title: productData.items[i].title,
+                                imageUrl: productData.items[i].imageUrl,
+                              ),
+                              Divider(),
+                            ],
+                          ),
+                          itemCount: productData.items.length,
+                        ),
+                      ),
+                    ),
+                  ),
       ),
     );
-  }
-
-  _onRefresh(BuildContext context)  async {
-    await Provider.of<Products>(context,listen: false).fetchProducts();
   }
 }
